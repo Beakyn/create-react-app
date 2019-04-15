@@ -202,6 +202,8 @@ module.exports = function (webpackEnv) {
           ]
         : paths.appIndexJs,
     output: {
+      // [enable worker-loader with HMR](https://github.com/webpack/webpack/issues/6642#issuecomment-371087342)
+      globalObject: isEnvDevelopment ? 'this' : 'window',
       // The build folder.
       path: isEnvProduction ? paths.appBuild : undefined,
       // Add /* filename */ comments to generated require()s in the output.
