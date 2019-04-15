@@ -169,6 +169,8 @@ module.exports = function(webpackEnv) {
       // changing JS code would still trigger a refresh.
     ].filter(Boolean),
     output: {
+      // [enable worker-loader with HMR](https://github.com/webpack/webpack/issues/6642#issuecomment-371087342)
+      globalObject: isEnvDevelopment ? 'this' : 'window',
       // The build folder.
       path: isEnvProduction ? paths.appBuild : undefined,
       // Add /* filename */ comments to generated require()s in the output.
