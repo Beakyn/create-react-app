@@ -14,6 +14,7 @@ const webpack = require('webpack');
 const resolve = require('resolve');
 const PnpWebpackPlugin = require('pnp-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -650,6 +651,15 @@ module.exports = function(webpackEnv) {
           };
         },
       }),
+      // Generate gzip files
+      isEnvProduction &&
+        new CompressionPlugin({
+          asset: '[path].gz[query]',
+          algorithm: 'gzip',
+          test: /\.js$|\.css$|\.html$|\.eot?.+$|\.ttf?.+$|\.woff?.+$|\.svg?.+$/,
+          threshold: 10240,
+          minRatio: 0.8,
+        }),
       // Moment.js is an extremely popular library that bundles large locale files
       // by default due to how webpack interprets its code. This is a practical
       // solution that requires the user to opt into importing specific locales.
