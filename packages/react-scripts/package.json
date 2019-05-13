@@ -1,12 +1,8 @@
 {
-  "name": "react-scripts",
-  "version": "4.0.0",
-  "description": "Configuration and scripts for Create React App.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/facebook/create-react-app.git",
-    "directory": "packages/react-scripts"
-  },
+  "name": "bkn-react-scripts",
+  "version": "0.2.2",
+  "description": "(3.1.2) Beakyn Configuration and scripts for Create React App.",
+  "repository": "https://github.com/beakyn/create-react-app",
   "license": "MIT",
   "engines": {
     "node": "^10.12.0 || >=12.0.0"
