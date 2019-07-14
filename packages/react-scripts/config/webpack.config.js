@@ -61,6 +61,11 @@ const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
 
+const toCamel = str => str.replace(/-([a-z])/g, g => g[1].toUpperCase());
+
+// Just to add a second entry module
+const secondEntryName = toCamel(process.env.SECOND_ENTRY || '');
+
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
 module.exports = function(webpackEnv) {
@@ -150,25 +155,38 @@ module.exports = function(webpackEnv) {
       : isEnvDevelopment && 'cheap-module-source-map',
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
-    entry: [
-      // Include an alternative client for WebpackDevServer. A client's job is to
-      // connect to WebpackDevServer by a socket and get notified about changes.
-      // When you save a file, the client will either apply hot updates (in case
-      // of CSS changes), or refresh the page (in case of JS changes). When you
-      // make a syntax error, this client will display a syntax error overlay.
-      // Note: instead of the default WebpackDevServer client, we use a custom one
-      // to bring better experience for Create React App users. You can replace
-      // the line below with these two lines if you prefer the stock client:
-      // require.resolve('webpack-dev-server/client') + '?/',
-      // require.resolve('webpack/hot/dev-server'),
-      isEnvDevelopment &&
-        require.resolve('react-dev-utils/webpackHotDevClient'),
-      // Finally, this is your app's code:
-      paths.appIndexJs,
-      // We include the app code last so that if there is a runtime error during
-      // initialization, it doesn't blow up the WebpackDevServer client, and
-      // changing JS code would still trigger a refresh.
-    ].filter(Boolean),
+    entry: secondEntryName
+      ? {
+          app: [
+            isEnvDevelopment &&
+              require.resolve('react-dev-utils/webpackHotDevClient'),
+            paths.appIndexJs,
+          ].filter(Boolean),
+          [secondEntryName]: [
+            isEnvDevelopment &&
+              require.resolve('react-dev-utils/webpackHotDevClient'),
+            paths.entryIndexJS,
+          ].filter(Boolean),
+        }
+      : [
+          // Include an alternative client for WebpackDevServer. A client's job is to
+          // connect to WebpackDevServer by a socket and get notified about changes.
+          // When you save a file, the client will either apply hot updates (in case
+          // of CSS changes), or refresh the page (in case of JS changes). When you
+          // make a syntax error, this client will display a syntax error overlay.
+          // Note: instead of the default WebpackDevServer client, we use a custom one
+          // to bring better experience for Create React App users. You can replace
+          // the line below with these two lines if you prefer the stock client:
+          // require.resolve('webpack-dev-server/client') + '?/',
+          // require.resolve('webpack/hot/dev-server'),
+          isEnvDevelopment &&
+            require.resolve('react-dev-utils/webpackHotDevClient'),
+          // Finally, this is your app's code:
+          paths.appIndexJs,
+          // We include the app code last so that if there is a runtime error during
+          // initialization, it doesn't blow up the WebpackDevServer client, and
+          // changing JS code would still trigger a refresh.
+        ].filter(Boolean),
     output: {
       // [enable worker-loader with HMR](https://github.com/webpack/webpack/issues/6642#issuecomment-371087342)
       globalObject: isEnvDevelopment ? 'this' : 'window',
@@ -561,32 +579,50 @@ module.exports = function(webpackEnv) {
       ],
     },
     plugins: [
-      // Generates an `index.html` file with the <script> injected.
-      new HtmlWebpackPlugin(
-        Object.assign(
-          {},
-          {
-            inject: true,
-            template: paths.appHtml,
-          },
-          isEnvProduction
-            ? {
-                minify: {
-                  removeComments: true,
-                  collapseWhitespace: true,
-                  removeRedundantAttributes: true,
-                  useShortDoctype: true,
-                  removeEmptyAttributes: true,
-                  removeStyleLinkTypeAttributes: true,
-                  keepClosingSlash: true,
-                  minifyJS: true,
-                  minifyCSS: true,
-                  minifyURLs: true,
+      // Generates an `index.html` and `${process.env.SENCOND_ENTRY}.html` files with the <script> injected.
+      ...[paths.appHtml, secondEntryName ? paths.entryHtml : '']
+        .filter(Boolean)
+        .map(
+          (htmlTemplate, _i, { length }) =>
+            new HtmlWebpackPlugin(
+              Object.assign(
+                {},
+                length > 1
+                  ? {
+                      chunks: [_i === 0 ? 'app' : `${secondEntryName}`],
+                      excludeChunks: [_i === 0 ? `${secondEntryName}` : 'app'],
+                    }
+                  : {},
+                _i == 1
+                  ? {
+                      filename: htmlTemplate.split('/')[
+                        htmlTemplate.split('/').length - 1
+                      ],
+                    }
+                  : {},
+                {
+                  inject: true,
+                  template: htmlTemplate,
                 },
-              }
-            : undefined
-        )
-      ),
+                isEnvProduction
+                  ? {
+                      minify: {
+                        removeComments: true,
+                        collapseWhitespace: true,
+                        removeRedundantAttributes: true,
+                        useShortDoctype: true,
+                        removeEmptyAttributes: true,
+                        removeStyleLinkTypeAttributes: true,
+                        keepClosingSlash: true,
+                        minifyJS: true,
+                        minifyCSS: true,
+                        minifyURLs: true,
+                      },
+                    }
+                  : undefined
+              )
+            )
+        ),
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
       // https://github.com/facebook/create-react-app/issues/5358
