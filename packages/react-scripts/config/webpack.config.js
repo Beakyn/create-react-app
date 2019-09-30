@@ -189,7 +189,7 @@ module.exports = function(webpackEnv) {
         ].filter(Boolean),
     output: {
       // [enable worker-loader with HMR](https://github.com/webpack/webpack/issues/6642#issuecomment-371087342)
-      globalObject: isEnvDevelopment ? 'this' : 'window',
+      globalObject: 'this',
       // The build folder.
       path: isEnvProduction ? paths.appBuild : undefined,
       // Add /* filename */ comments to generated require()s in the output.
@@ -225,6 +225,7 @@ module.exports = function(webpackEnv) {
       globalObject: 'this',
     },
     optimization: {
+      noEmitOnErrors: false,
       minimize: isEnvProduction,
       minimizer: [
         // This is only used in production mode
@@ -397,6 +398,63 @@ module.exports = function(webpackEnv) {
                 limit: imageInlineSizeLimit,
                 name: 'static/media/[name].[hash:8].[ext]',
               },
+            },
+            // Process WebWorker JS with Babel.
+            // The preset includes JSX, Flow, TypeScript, and some ESnext features.
+            {
+              test: /\.worker\.(js|mjs|ts)$/,
+              include: paths.appSrc,
+              use: [
+                require.resolve('worker-loader'),
+                {
+                  loader: require.resolve('babel-loader'),
+                  options: {
+                    customize: require.resolve(
+                      'babel-preset-react-app/webpack-overrides'
+                    ),
+                    // @remove-on-eject-begin
+                    babelrc: false,
+                    configFile: false,
+                    presets: [require.resolve('babel-preset-react-app')],
+                    // Make sure we have a unique cache identifier, erring on the
+                    // side of caution.
+                    // We remove this when the user ejects because the default
+                    // is sane and uses Babel options. Instead of options, we use
+                    // the react-scripts and babel-preset-react-app versions.
+                    cacheIdentifier: getCacheIdentifier(
+                      isEnvProduction
+                        ? 'production'
+                        : isEnvDevelopment && 'development',
+                      [
+                        'babel-plugin-named-asset-import',
+                        'babel-preset-react-app',
+                        'react-dev-utils',
+                        'react-scripts',
+                      ]
+                    ),
+                    // @remove-on-eject-end
+                    plugins: [
+                      [
+                        require.resolve('babel-plugin-named-asset-import'),
+                        {
+                          loaderMap: {
+                            svg: {
+                              ReactComponent:
+                                '@svgr/webpack?-prettier,-svgo![path]',
+                            },
+                          },
+                        },
+                      ],
+                    ],
+                    // This is a feature of `babel-loader` for webpack (not Babel itself).
+                    // It enables caching results in ./node_modules/.cache/babel-loader/
+                    // directory for faster rebuilds.
+                    cacheDirectory: true,
+                    cacheCompression: false,
+                    compact: isEnvProduction,
+                  },
+                },
+              ],
             },
             // Process application JS with Babel.
             // The preset includes JSX, Flow, TypeScript, and some ESnext features.
