@@ -761,7 +761,9 @@ module.exports = function (webpackEnv) {
             manifest[file.name] = file.path;
             return manifest;
           }, seed);
-          const entrypointFiles = entrypoints.main.filter(
+          const mainEntryPoint = !secondEntryName ? 'main' : 'app';
+
+          const entrypointFiles = entrypoints[mainEntryPoint].filter(
             fileName => !fileName.endsWith('.map')
           );
 
