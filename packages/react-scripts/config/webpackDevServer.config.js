@@ -21,6 +21,7 @@ const host = process.env.HOST || '0.0.0.0';
 const sockHost = process.env.WDS_SOCKET_HOST;
 const sockPath = process.env.WDS_SOCKET_PATH; // default: '/sockjs-node'
 const sockPort = process.env.WDS_SOCKET_PORT;
+const secondEntry = process.env.SECOND_ENTRY || '';
 
 module.exports = function (proxy, allowedHost) {
   return {
@@ -106,6 +107,9 @@ module.exports = function (proxy, allowedHost) {
       // See https://github.com/facebook/create-react-app/issues/387.
       disableDotRule: true,
       index: paths.publicUrlOrPath,
+      rewrites: secondEntry
+        ? [{ from: new RegExp(`^/${secondEntry}`), to: `/${secondEntry}.html` }]
+        : [],
     },
     public: allowedHost,
     // `proxy` is run between `before` and `after` `webpack-dev-server` hooks
