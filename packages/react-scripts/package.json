@@ -1,7 +1,7 @@
 {
   "name": "bkn-react-scripts",
-  "version": "0.3.4",
-  "description": "(3.4.0) Beakyn Configuration and scripts for Create React App.",
+  "version": "0.3.5",
+  "description": "(3.4.1) Beakyn Configuration and scripts for Create React App.",
   "repository": "https://github.com/beakyn/create-react-app",
   "license": "MIT",
   "engines": {
