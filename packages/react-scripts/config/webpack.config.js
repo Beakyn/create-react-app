@@ -66,6 +66,11 @@ const toCamel = str => str.replace(/-([a-z])/g, g => g[1].toUpperCase());
 // Just to add a second entry module
 const secondEntryName = toCamel(process.env.SECOND_ENTRY || '');
 
+const isCI =
+  process.env.CI &&
+  (typeof process.env.CI !== 'string' ||
+    process.env.CI.toLowerCase() !== 'false');
+
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
 module.exports = function(webpackEnv) {
@@ -229,6 +234,7 @@ module.exports = function(webpackEnv) {
       minimizer: [
         // This is only used in production mode
         new TerserPlugin({
+          parallel: isCI ? 2 : true,
           terserOptions: {
             parse: {
               // We want terser to parse ecma 8 code. However, we don't want it
