@@ -41,6 +41,7 @@ const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 const postcssNormalize = require('postcss-normalize');
 
 const appPackageJson = require(paths.appPackageJson);
+const ThreadsPlugin = require('threads-plugin');
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
@@ -659,6 +660,7 @@ module.exports = function (webpackEnv) {
       ],
     },
     plugins: [
+      new ThreadsPlugin(),
       // Generates an `index.html` and `${process.env.SENCOND_ENTRY}.html` files with the <script> injected.
       ...[paths.appHtml, secondEntryName ? paths.entryHtml : '']
         .filter(Boolean)
